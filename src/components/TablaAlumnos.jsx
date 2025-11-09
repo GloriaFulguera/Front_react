@@ -2,10 +2,11 @@
 import Tabla from "./Tabla";
 import Button from "./Boton"; 
 
-// 1. Recibimos 'onEditar' y 'user' como props
-export default function TablaAlumnos({ items, onVerDetalle, onEditar, user }) { 
+// 1. Recibimos 'onDarBaja' como nueva prop
+export default function TablaAlumnos({ items, onVerDetalle, onEditar, onDarBaja, user }) { 
   return (
     <div>
+      {console.log(items)}
       <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Alumnos</h3>
       <Tabla
         headers={["Id", "Nombre", "Mail", "Estado", "Acciones"]} 
@@ -15,8 +16,7 @@ export default function TablaAlumnos({ items, onVerDetalle, onEditar, user }) {
           a.Mail ?? a.mail,
           a.fe_baja ? "Baja" : "Activo",
           
-          // 2. Usamos un div para agrupar los botones
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
             <Button
               size="sm"
               onClick={() => onVerDetalle(a.Id ?? a.id)}
@@ -24,16 +24,27 @@ export default function TablaAlumnos({ items, onVerDetalle, onEditar, user }) {
               Ver
             </Button>
             
-            {/* 3. LÓGICA DE PERMISOS:
-              Muestra el botón si el rol es 1 (admin)
-              O si el ID del usuario logueado es igual al ID del alumno de esta fila
-            */}
+            {/* Lógica de permisos para Editar */}
             {(user?.rol === 1 || user?.id === (a.Id ?? a.id)) && (
               <Button
                 size="sm"
                 onClick={() => onEditar(a)} // Pasamos el objeto 'a' completo
               >
                 Editar
+              </Button>
+            )}
+
+            {/* 2. NUEVO BOTÓN (Baja lógica) */}
+            {/* Visible solo si:
+                1. El usuario es admin (rol 1)
+                2. El alumno NO está ya dado de baja (!a.fe_baja)
+            */}
+            {user?.rol === 1 && !a.fe_baja && (
+              <Button
+                size="sm"
+                onClick={() => onDarBaja(a.Id ?? a.id)}
+              >
+                Dar de Baja
               </Button>
             )}
           </div>

@@ -13,11 +13,12 @@ import DetalleAlumno from "../components/DetalleAlumno";
 import CrearAlumnoForm from "../components/CrearAlumnoForm";
 import EditarAlumnoForm from "../components/EditarAlumnoForm"; 
 import Button from "../components/Boton"; // Tu nombre de componente
+import CrearMateriaForm from "../components/CrearMateriaForm";
 
 export default function Home() {
   const navigate = useNavigate();
 
-  // Estados
+  // Estados (sin cambios)
   const [vista, setVista] = useState("alumnos");
   const [alumnos, setAlumnos] = useState([]);
   const [materias, setMaterias] = useState([]);
@@ -27,19 +28,17 @@ export default function Home() {
   const [materiaSel, setMateriaSel] = useState("");
   const [alumnoSeleccionado, setAlumnoSeleccionado] = useState(null);
   const [mostrandoFormCrear, setMostrandoFormCrear] = useState(false);
-  const [alumnoParaEditar, setAlumnoParaEditar] = useState(null); // Estado para edición
+  const [alumnoParaEditar, setAlumnoParaEditar] = useState(null); 
+  const [mostrandoFormCrearMateria, setMostrandoFormCrearMateria] = useState(false);
 
-  // Configuración de Axios
+  // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
 
-  // Helpers
+  // Helpers (sin cambios)
   const token = useMemo(() => localStorage.getItem("token"), []);
-  const user = useMemo(() => decodeJWT(token), [token]); // ¡Aquí está tu usuario!
+  const user = useMemo(() => decodeJWT(token), [token]); 
   
-  // (El console.log que usamos para debuggear)
-  // console.log("DATOS DEL USUARIO:", user);
-
-  // Efecto para la autenticación
+  // Efecto para la autenticación (sin cambios)
   useEffect(() => {
     if (!token) {
       navigate("/"); return;
@@ -50,19 +49,19 @@ export default function Home() {
 
   // ===== LLAMADAS API (con tu estilo de función flecha) =====
 
-  const fetchAlumnos = async () => {
+  // (Todas las funciones de fetch, crear y editar quedan EXACTAMENTE IGUAL)
+  const fetchAlumnos = async () => { /* ... tu código ... */ 
     setCargando(true); setError("");
     try {
-      const { data } = await axios.get(`/api/alumnos`);
-      setAlumnos(Array.isArray(data) ? data : data?.data ?? []);
+      const response = await axios.get(`/api/alumnos`);
+      setAlumnos(response.data);
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error");
     } finally {
       setCargando(false);
     }
   };
-  
-  const fetchMaterias = async () => {
+  const fetchMaterias = async () => { /* ... tu código ... */ 
     setCargando(true); setError("");
     try {
       const response = await axios.get(`/api/materias`);
@@ -73,8 +72,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  
-  const fetchMisMaterias = async (alumnoId) => {
+  const fetchMisMaterias = async (alumnoId) => { /* ... tu código ... */ 
     setCargando(true); setError("");
     try {
       const { data } = await axios.get(`/api/alumnos/${alumnoId}/materias`);
@@ -85,8 +83,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  
-  const fetchAlumnoById = async (id) => {
+  const fetchAlumnoById = async (id) => { /* ... tu código ... */ 
     setCargando(true); setError(""); setAlumnoSeleccionado(null);
     try {
       const response= await axios.get(`/api/alumnos/${id}`);
@@ -97,15 +94,12 @@ export default function Home() {
       setCargando(false);
     }
   };
-  
-  const crearAlumno = async (alumnoData) => {
-    // 'alumnoData' viene de 'CrearAlumnoForm'
+  const crearAlumno = async (alumnoData) => { /* ... tu código ... */ 
     const body = {
       nombre: alumnoData.Nombre,
       mail: alumnoData.Mail,
       password: alumnoData.Password,
     };
-    
     setCargando(true);
     setError("");
     try {
@@ -121,51 +115,86 @@ export default function Home() {
       setCargando(false);
     }
   };
-
-  // --- ESTA ES LA FUNCIÓN CORREGIDA ---
-  const editarAlumno = async (id, alumnoData) => {
-    // 'id' es el ID del alumno a editar
-    // 'alumnoData' viene de 'EditarAlumnoForm' y tiene:
-    // { Nombre, Mail, Username, Password? }
-
+  const editarAlumno = async (id, alumnoData) => { /* ... tu código ... */ 
     setCargando(true);
     setError("");
-
-    // 1. Construimos el body final que pide la API
     const bodyFinal = {
-      // Datos del formulario
       nombre: alumnoData.Nombre,
       mail: alumnoData.Mail,
       username: alumnoData.Username,
-
-      // Datos de auditoría (sacados del 'user' logueado)
-      // Asegúrate de que user.username exista. Si no, usa user.id o lo que tengas.
-      userMod: user.username, // O user.id, user.mail, etc.
-      userModRol: user.rol // (Este ya sabemos que es el ID del rol, ej: 1)
+      userMod: user.username, 
+      userModRol: user.rol 
     };
-
-    // 2. Solo agregamos el password al body SI se escribió uno
     if (alumnoData.Password) {
-      bodyFinal.password = alumnoData.Password; // (Ajusta la clave 'password' si es distinta)
+      bodyFinal.password = alumnoData.Password; 
     }
-    
     try {
-      // 3. Enviamos el 'bodyFinal'
       await axios.put(`/api/alumnos/${id}`, bodyFinal, {
         headers: { "Content-Type": "application/json" }
       });
       alert("Alumno actualizado exitosamente");
-      setAlumnoParaEditar(null); // Ocultamos el form de edición
-      await fetchAlumnos(); // Recargamos la lista
+      setAlumnoParaEditar(null); 
+      await fetchAlumnos(); 
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al actualizar alumno");
     } finally {
       setCargando(false);
     }
   };
-  // --- FIN DE LA FUNCIÓN CORREGIDA ---
 
-  const inscribirme = async () => {
+  // --- 1. AQUÍ AGREGAMOS LA NUEVA FUNCIÓN ---
+  const darBajaAlumno = async (id) => {
+    // a. Pedimos confirmación
+    const confirmado = window.confirm(
+      `¿Estás seguro de que deseas dar de baja al alumno con ID: ${id}?`
+    );
+
+    if (!confirmado) {
+      return; // Si el admin cancela, no hacemos nada
+    }
+
+    setCargando(true);
+    setError("");
+    try {
+      // b. Llamamos al endpoint DELETE
+      await axios.delete(`/api/alumnos/${id}`);
+      
+      alert("Alumno dado de baja exitosamente.");
+      
+      // c. Refrescamos la lista
+      await fetchAlumnos(); 
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al dar de baja al alumno");
+    } finally {
+      setCargando(false);
+    }
+  };
+  // --- FIN DE LA NUEVA FUNCIÓN ---
+
+
+  const crearMateria = async (materiaData) => {
+    const body = {
+      nombre: materiaData.Nombre,
+      carrera: materiaData.Carrera,
+    };
+    
+    setCargando(true);
+    setError("");
+    try {
+      await axios.post(`/api/materias`, body, {
+        headers: { "Content-Type": "application/json" }
+      });
+      alert("Materia creada exitosamente");
+      setMostrandoFormCrearMateria(false); // Ocultamos el form
+      await fetchMaterias(); // Recargamos la lista de MATERIAS
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al crear materia");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const inscribirme = async () => { /* ... tu código ... */ 
     if (!user?.id || !materiaSel) return;
     setCargando(true); setError("");
     try {
@@ -187,11 +216,13 @@ export default function Home() {
   };
   // ===== FIN DE LLAMADAS API =====
 
+  // useEffect (sin cambios)
   useEffect(() => {
     setError("");
     setAlumnoSeleccionado(null);
     setMostrandoFormCrear(false);
-    setAlumnoParaEditar(null); // Limpiamos el estado de edición al cambiar de vista
+    setAlumnoParaEditar(null); 
+    setMostrandoFormCrearMateria(false);
     
     if (vista === "alumnos") fetchAlumnos();
     if (vista === "materias") fetchMaterias();
@@ -202,6 +233,7 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vista, user?.id]);
 
+  // logout (sin cambios)
   const logout = () => {
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
@@ -227,31 +259,28 @@ export default function Home() {
             {/* Lógica de renderizado de 'alumnos' */}
             {vista === "alumnos" && (
               <>
+                {/* ... (lógica de detalle, editar, crear no cambia) ... */}
                 {alumnoSeleccionado ? (
-                  // 1. Muestra el detalle
                   <DetalleAlumno
                     alumno={alumnoSeleccionado}
                     onVolver={() => setAlumnoSeleccionado(null)}
                   />
                 ) : alumnoParaEditar ? (
-                  // 2. Muestra el form de EDICIÓN
                   <EditarAlumnoForm
-                    alumno={alumnoParaEditar} // El objeto del alumno a editar
-                    onGuardar={editarAlumno} // La función API que acabamos de corregir
+                    alumno={alumnoParaEditar}
+                    onGuardar={editarAlumno} 
                     onCancelar={() => setAlumnoParaEditar(null)}
                     cargando={cargando}
                   />
                 ) : mostrandoFormCrear ? (
-                  // 3. Muestra el form de CREACIÓN
                   <CrearAlumnoForm
                     onGuardar={crearAlumno}
                     onCancelar={() => setMostrandoFormCrear(false)}
                     cargando={cargando}
                   />
                 ) : (
-                  // 4. Muestra la tabla (default)
+                  // Muestra la tabla (default)
                   <>
-                    {/* El botón de crear, visible solo para rol 1 */}
                     {user?.rol === 1 && (
                       <div style={{ marginBottom: 16 }}>
                         <Button onClick={() => setMostrandoFormCrear(true)}>
@@ -260,18 +289,46 @@ export default function Home() {
                       </div>
                     )}
                     
+                    {/* --- 2. AQUÍ PASAMOS LA NUEVA PROP --- */}
                     <TablaAlumnos
                       items={alumnos}
                       onVerDetalle={fetchAlumnoById}
-                      onEditar={(alumno) => setAlumnoParaEditar(alumno)} // Setea el alumno a editar
-                      user={user} // Pasa el 'user' para los permisos del botón
+                      onEditar={(alumno) => setAlumnoParaEditar(alumno)} 
+                      onDarBaja={darBajaAlumno} // <-- PROP NUEVA
+                      user={user} 
                     />
                   </>
                 )}
               </>
             )}
             
-            {vista === "materias" && <TablaMaterias items={materias} />}
+            {/* ... (el resto de vistas no cambia) ... */}
+            {vista === "materias" && (
+              <>
+                {mostrandoFormCrearMateria ? (
+                  // 1. Muestra el form si estamos creando
+                  <CrearMateriaForm
+                    onGuardar={crearMateria}
+                    onCancelar={() => setMostrandoFormCrearMateria(false)}
+                    cargando={cargando}
+                  />
+                ) : (
+                  // 2. Muestra la tabla (default)
+                  <>
+                    {/* Botón de crear, visible solo para rol 1 (admin) */}
+                    {user?.rol === 1 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <Button onClick={() => setMostrandoFormCrearMateria(true)}>
+                          + Crear Nueva Materia
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <TablaMaterias items={materias} />
+                  </>
+                )}
+              </>
+            )}
             {vista === "misMaterias" && <TablaMaterias items={misMaterias} titulo="Materias en las que estoy inscripto/a" />}
             {vista === "inscribirme" && (
               <InscribirView

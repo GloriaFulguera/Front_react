@@ -7,9 +7,9 @@ export default function TablaMaterias({ items, titulo = "Materias" }) {
       <Tabla
         headers={["Id", "Nombre", "Carrera"]}
         rows={(items || []).map(m => [
-          m.Id ?? m.id,
-          m.Nombre ?? m.nombre,
-          m.Carrera ?? m.carrera
+          m.idMateria,
+          m.nombre,
+          m.carrera
         ])}
       />
     </div>
