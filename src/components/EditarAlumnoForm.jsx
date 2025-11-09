@@ -1,25 +1,41 @@
+// src/components/EditarAlumnoForm.jsx
 import { useState } from "react";
-import Button from "./Boton";
+import Button from "./Boton"; // Uso tu import de "Boton"
 
-export default function CrearAlumnoForm({ onGuardar, onCancelar, cargando }) {
-  const [nombre, setNombre] = useState("");
-  const [mail, setMail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+// 1. Recibe el 'alumno' que vamos a editar
+export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alumno }) {
+  // 2. Pre-cargamos los useState con los datos del alumno
+  const [nombre, setNombre] = useState(alumno.nombre ?? "");
+  const [mail, setMail] = useState(alumno.mail ?? "");
+  const [username, setUsername] = useState(alumno.username ?? "");
+  const [password, setPassword] = useState(""); // El password empieza vacío
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!nombre || !mail || !password) {
-      alert("Por favor completa todos los campos (Nombre, Mail y Password).");
+    if (!nombre || !mail || !username) {
+      alert("Los campos Nombre, Mail y Username no pueden estar vacíos.");
       return;
     }
-    onGuardar({ Nombre: nombre, Mail: mail,Username: username, Password: password });
+
+    // 3. Creamos el body solo con los datos
+    const data = {
+      Nombre: nombre,
+      Mail: mail,
+      Username: username,
+    };
+    
+    
+    // 5. Llamamos a onGuardar con el ID del alumno y los nuevos datos
+    onGuardar(alumno.Id ?? alumno.id, data);
   };
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 420 }}>
-      <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Crear Nuevo Alumno</h3>
+      <h3 style={{ fontWeight: 600, marginBottom: 8 }}>
+        Editar Alumno (ID: {alumno.Id ?? alumno.id})
+      </h3>
       
+      {/* Campo Nombre */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Nombre</label>
         <input
@@ -31,6 +47,7 @@ export default function CrearAlumnoForm({ onGuardar, onCancelar, cargando }) {
         />
       </div>
 
+      {/* Campo Mail */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Mail</label>
         <input
@@ -42,6 +59,7 @@ export default function CrearAlumnoForm({ onGuardar, onCancelar, cargando }) {
         />
       </div>
 
+      {/* Campo Username */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Username</label>
         <input
@@ -53,17 +71,7 @@ export default function CrearAlumnoForm({ onGuardar, onCancelar, cargando }) {
         />
       </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <label className="text-sm">Password</label>
-        <input
-          type="password"
-          className="border rounded px-2 py-2 w-full"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={cargando}
-        />
-      </div>
-
+      {/* Botones */}
       <div style={{ display: "flex", gap: 8 }}>
         <Button
           type="button"
@@ -74,7 +82,7 @@ export default function CrearAlumnoForm({ onGuardar, onCancelar, cargando }) {
           Cancelar
         </Button>
         <Button type="submit" disabled={cargando} size="md">
-          Guardar Alumno
+          Actualizar Alumno
         </Button>
       </div>
     </form>
