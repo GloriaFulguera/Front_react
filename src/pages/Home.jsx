@@ -15,6 +15,8 @@ import EditarAlumnoForm from "../components/EditarAlumnoForm";
 import Button from "../components/Boton"; // Tu nombre de componente
 import CrearMateriaForm from "../components/CrearMateriaForm";
 import EditarMateriaForm from "../components/EditarMateriaForm";
+import TablaAlumnosInscriptos from "../components/TablaAlumnosInscriptos";
+import TablaMateriasInscriptas from "../components/TablaMateriasInscriptas";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -33,6 +35,9 @@ export default function Home() {
   const [mostrandoFormCrearMateria, setMostrandoFormCrearMateria] = useState(false);
   const [materiaParaEditar, setMateriaParaEditar] = useState(null);
   const [alumnoSel, setAlumnoSel] = useState("");
+  const [materiasDelAlumno, setMateriasDelAlumno] = useState([]);
+  const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
+  const [alumnosDeMateria, setAlumnosDeMateria] = useState([]);
 
   // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
@@ -86,17 +91,42 @@ export default function Home() {
       setCargando(false);
     }
   };
-  const fetchAlumnoById = async (id) => { /* ... tu código ... */ 
-    setCargando(true); setError(""); setAlumnoSeleccionado(null);
+  
+  const fetchAlumnosDeMateria = async (materia) => {
+    setCargando(true);
+    setError("");
+    setAlumnosDeMateria([]);
     try {
-      const response= await axios.get(`/api/alumnos/${id}`);
-      setAlumnoSeleccionado(response.data[0]); // Tu lógica
+      const { data } = await axios.get(`/api/materias/${materia.idMateria}/alumnos`);
+      setAlumnosDeMateria(data);
+      setMateriaSeleccionada(materia); // Guardamos la materia para mostrar el título
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || "Error al buscar alumno");
+      setError(e?.response?.data?.message || e.message || "Error al buscar alumnos de la materia");
     } finally {
       setCargando(false);
     }
   };
+
+  const fetchAlumnoById = async (id) => { 
+    setCargando(true); 
+    setError(""); 
+    setAlumnoSeleccionado(null);
+    setMateriasDelAlumno([]); 
+    try {
+      const resAlumno = await axios.get(`/api/alumnos/${id}`);
+      setAlumnoSeleccionado(resAlumno.data[0]); 
+
+      const resMaterias = await axios.get(`/api/alumnos/${id}/materias`);
+      // Esta API devuelve la lista de materias inscriptas (formato simple)
+      setMateriasDelAlumno(resMaterias.data); 
+
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al buscar alumno o sus materias");
+    } finally {
+      setCargando(false);
+    }
+  };
+
   const crearAlumno = async (alumnoData) => { /* ... tu código ... */ 
     const body = {
       nombre: alumnoData.Nombre,
@@ -358,6 +388,8 @@ export default function Home() {
                   <DetalleAlumno
                     alumno={alumnoSeleccionado}
                     onVolver={() => setAlumnoSeleccionado(null)}
+                    materias={materiasDelAlumno}
+                    user={user}
                   />
                 ) : alumnoParaEditar ? (
                   <EditarAlumnoForm
@@ -398,7 +430,22 @@ export default function Home() {
             
             {vista === "materias" && (
               <>
-                {materiaParaEditar ? (
+              {materiaSeleccionada ? (
+                  <div>
+                    <h3>Alumnos inscriptos en: {materiaSeleccionada.nombre}</h3>
+                    
+                    {/* USAMOS EL NUEVO COMPONENTE */}
+                    <TablaAlumnosInscriptos
+                      items={alumnosDeMateria}
+                    />
+                    
+                    <div style={{ marginTop: 16 }}>
+                      <Button onClick={() => setMateriaSeleccionada(null)} size="sm">
+                        Volver a Materias
+                      </Button>
+                    </div>
+                  </div>
+                  ) : materiaParaEditar ? (
                   <EditarMateriaForm
                     materia={materiaParaEditar}
                     onGuardar={editarMateria}
@@ -427,6 +474,7 @@ export default function Home() {
                       items={materias} 
                       onEditar={(materia) => setMateriaParaEditar(materia)}
                       onDarBaja={darBajaMateria} // <-- PROP NUEVA
+                      onVerAlumnos={fetchAlumnosDeMateria}
                       user={user}
                     />
                   </>

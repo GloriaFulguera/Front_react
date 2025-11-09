@@ -2,23 +2,21 @@
 import Tabla from "./Tabla";
 import Button from "./Boton"; // Necesitamos el Botón
 
-// 1. Recibimos 'onDarBaja' como nueva prop
-export default function TablaMaterias({ items, titulo = "Materias", onEditar, onDarBaja, user }) {
+// 1. RECIBIMOS 'onVerAlumnos' aquí
+export default function TablaMaterias({ items, titulo = "Materias", onEditar, onDarBaja, onVerAlumnos, user }) {
   return (
     <div>
       <h3 style={{ fontWeight: 600, marginBottom: 8 }}>{titulo}</h3>
       <Tabla
-        // (Asumiré que también quieres mostrar el estado 'Baja' en el futuro)
         headers={["Id", "Nombre", "Carrera", "Estado", "Acciones"]}
         rows={(items || []).map(m => [
           m.idMateria,
           m.nombre,
           m.carrera,
           
-          // 2. Agregamos la columna Estado (igual que en alumnos)
           m.fe_baja ? "Baja" : "Activa",
 
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
             {/* Lógica de Editar (solo admin) */}
             {user?.rol === 1 && (
               <Button
@@ -29,7 +27,7 @@ export default function TablaMaterias({ items, titulo = "Materias", onEditar, on
               </Button>
             )}
 
-            {/* 3. Lógica de Baja (solo admin y si no está de baja) */}
+            {/* Lógica de Baja (solo admin y si no está de baja) */}
             {user?.rol === 1 && !m.fe_baja && (
               <Button
                 size="sm"
@@ -38,6 +36,17 @@ export default function TablaMaterias({ items, titulo = "Materias", onEditar, on
                 Dar de Baja
               </Button>
             )}
+
+            {/* --- 2. ESTE ES EL BLOQUE QUE TE FALTABA --- */}
+            {/* Botón "Ver Alumnos" (Solo Admin) */}
+            {/* 'onVerAlumnos' solo existe si Home se lo pasa (no en "Mis Materias") */}
+            {user?.rol === 1 && onVerAlumnos && (
+              <Button size="sm" onClick={() => onVerAlumnos(m)}>
+                Ver Alumnos
+              </Button>
+            )}
+            {/* --- FIN DEL BLOQUE QUE FALTABA --- */}
+
           </div>
         ])}
       />
