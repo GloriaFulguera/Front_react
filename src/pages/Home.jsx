@@ -22,7 +22,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   // Estados (sin cambios)
-  const [vista, setVista] = useState("alumnos");
+  const [vista, setVista] = useState(null);
   const [alumnos, setAlumnos] = useState([]);
   const [materias, setMaterias] = useState([]);
   const [misMaterias, setMisMaterias] = useState([]);
@@ -38,6 +38,8 @@ export default function Home() {
   const [materiasDelAlumno, setMateriasDelAlumno] = useState([]);
   const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
   const [alumnosDeMateria, setAlumnosDeMateria] = useState([]);
+
+  
 
   // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
@@ -383,6 +385,15 @@ export default function Home() {
     setMostrandoFormCrearMateria(false);
     setMateriaParaEditar(null);
     
+    if (vista === null) {
+      if (user?.rol === 1) { // Admin (rol 1)
+        setVista("alumnos");
+      } else { // Otro rol
+        setVista("materias");
+      }
+      return; // Salimos (el effect se volverá a ejecutar)
+    }
+
     if (vista === "alumnos") fetchAlumnos();
     if (vista === "materias") fetchMaterias();
     if (vista === "misMaterias" && user?.id) fetchMisMaterias(user.id);

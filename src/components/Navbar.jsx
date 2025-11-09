@@ -11,9 +11,15 @@ export default function Navbar({ user, vista, setVista, onLogout }) {
       background: "#fff", padding: 12, borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,.06)"
     }}>
       <strong>G A M I  </strong>
-      <button className={btn(vista === "alumnos")} onClick={() => setVista("alumnos")}>Alumnos</button>
+      {user?.rol === 1 && (
+        <button className={btn(vista === "alumnos")} onClick={() => setVista("alumnos")}>Alumnos</button>
+      )}
+      {/* <button className={btn(vista === "alumnos")} onClick={() => setVista("alumnos")}>Alumnos</button> */}
       <button className={btn(vista === "materias")} onClick={() => setVista("materias")}>Materias</button>
-      <button className={btn(vista === "misMaterias")} onClick={() => setVista("misMaterias")}>Mis materias</button>
+      {user?.rol === 3 && (
+        <button className={btn(vista === "misMaterias")} onClick={() => setVista("misMaterias")}>Mis materias</button>
+      )}
+      {/* <button className={btn(vista === "misMaterias")} onClick={() => setVista("misMaterias")}>Mis materias</button> */}
       <button className={btn(vista === "inscribirme")} onClick={() => setVista("inscribirme")}>Inscribirme</button>
 
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
