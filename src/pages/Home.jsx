@@ -14,6 +14,7 @@ import CrearAlumnoForm from "../components/CrearAlumnoForm";
 import EditarAlumnoForm from "../components/EditarAlumnoForm"; 
 import Button from "../components/Boton"; // Tu nombre de componente
 import CrearMateriaForm from "../components/CrearMateriaForm";
+import EditarMateriaForm from "../components/EditarMateriaForm";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function Home() {
   const [mostrandoFormCrear, setMostrandoFormCrear] = useState(false);
   const [alumnoParaEditar, setAlumnoParaEditar] = useState(null); 
   const [mostrandoFormCrearMateria, setMostrandoFormCrearMateria] = useState(false);
+  const [materiaParaEditar, setMateriaParaEditar] = useState(null);
 
   // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
@@ -214,6 +216,35 @@ export default function Home() {
       setCargando(false);
     }
   };
+  const editarMateria = async (id, materiaData) => {
+    // 'id' es el ID de la materia
+    // 'materiaData' viene de EditarMateriaForm: { Nombre: "...", CarreraId: 2 }
+
+    setCargando(true);
+    setError("");
+
+    // 4. Construimos el body EXACTO que pide tu API
+    const bodyFinal = {
+      nombre: materiaData.Nombre,
+      carrera: materiaData.CarreraId, // ID de la carrera
+      userMod: user.username,         // Usuario de auditoría
+      userModRol: user.rol            // Rol de auditoría
+    };
+    console.log("MATERIA DATA")
+    console.log(materiaData)
+    try {
+      await axios.put(`/api/materias/${id}`, bodyFinal, {
+        headers: { "Content-Type": "application/json" }
+      });
+      alert("Materia actualizada exitosamente");
+      setMateriaParaEditar(null); // Ocultamos el form
+      await fetchMaterias(); // Recargamos la lista
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al actualizar materia");
+    } finally {
+      setCargando(false);
+    }
+  };
   // ===== FIN DE LLAMADAS API =====
 
   // useEffect (sin cambios)
@@ -223,6 +254,7 @@ export default function Home() {
     setMostrandoFormCrear(false);
     setAlumnoParaEditar(null); 
     setMostrandoFormCrearMateria(false);
+    setMateriaParaEditar(null);
     
     if (vista === "alumnos") fetchAlumnos();
     if (vista === "materias") fetchMaterias();
@@ -305,17 +337,24 @@ export default function Home() {
             {/* ... (el resto de vistas no cambia) ... */}
             {vista === "materias" && (
               <>
-                {mostrandoFormCrearMateria ? (
-                  // 1. Muestra el form si estamos creando
+                {materiaParaEditar ? (
+                  // 1. Muestra el form de EDICIÓN
+                  <EditarMateriaForm
+                    materia={materiaParaEditar}
+                    onGuardar={editarMateria}
+                    onCancelar={() => setMateriaParaEditar(null)}
+                    cargando={cargando}
+                  />
+                ) : mostrandoFormCrearMateria ? (
+                  // 2. Muestra el form de CREACIÓN
                   <CrearMateriaForm
                     onGuardar={crearMateria}
                     onCancelar={() => setMostrandoFormCrearMateria(false)}
                     cargando={cargando}
                   />
                 ) : (
-                  // 2. Muestra la tabla (default)
+                  // 3. Muestra la tabla (default)
                   <>
-                    {/* Botón de crear, visible solo para rol 1 (admin) */}
                     {user?.rol === 1 && (
                       <div style={{ marginBottom: 16 }}>
                         <Button onClick={() => setMostrandoFormCrearMateria(true)}>
@@ -324,7 +363,12 @@ export default function Home() {
                       </div>
                     )}
                     
-                    <TablaMaterias items={materias} />
+                    {/* 7. Pasamos las nuevas props a TablaMaterias */}
+                    <TablaMaterias 
+                      items={materias} 
+                      onEditar={(materia) => setMateriaParaEditar(materia)}
+                      user={user}
+                    />
                   </>
                 )}
               </>
