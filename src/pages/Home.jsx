@@ -32,6 +32,7 @@ export default function Home() {
   const [alumnoParaEditar, setAlumnoParaEditar] = useState(null); 
   const [mostrandoFormCrearMateria, setMostrandoFormCrearMateria] = useState(false);
   const [materiaParaEditar, setMateriaParaEditar] = useState(null);
+  const [alumnoSel, setAlumnoSel] = useState("");
 
   // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
@@ -196,26 +197,63 @@ export default function Home() {
     }
   };
 
-  const inscribirme = async () => { /* ... tu código ... */ 
-    if (!user?.id || !materiaSel) return;
-    setCargando(true); setError("");
+  const inscribirme = async () => { 
+    
+    // a. Determinamos qué alumno inscribir
+    let idAlumnoParaInscribir;
+
+    if (user?.rol === 1) { // Si es Admin
+      idAlumnoParaInscribir = alumnoSel;
+      if (!idAlumnoParaInscribir) {
+        alert("Modo Admin: Por favor, selecciona un alumno.");
+        return;
+      }
+    } else { // Si es Alumno
+      idAlumnoParaInscribir = user?.id;
+    }
+
+    // b. Validamos la materia
+    if (!materiaSel) {
+      alert("Por favor, selecciona una materia.");
+      return;
+    }
+
+    setCargando(true); 
+    setError("");
+    
     try {
+      // c. Construimos el body que pide la API
       const body = {
-        alumnoId: Number(user.id), materiaId: Number(materiaSel),
-        Id_alumno: Number(user.id), Id_materia: Number(materiaSel),
+        idAlumno: Number(idAlumnoParaInscribir),
+        idMateria: Number(materiaSel),
+        userMod: user.username, 
+        userModRol: user.rol
       };
+
       await axios.post(`/api/inscripciones`, body, {
         headers: { "Content-Type": "application/json" }
       });
-      await fetchMisMaterias(user.id);
-      setVista("misMaterias");
+
       alert("Inscripción realizada");
+
+      // d. Lógica de feedback (diferente por rol)
+      if (user?.rol === 1) {
+        // Si es admin, limpiamos los campos y se queda en la vista
+        setAlumnoSel("");
+        setMateriaSel("");
+      } else {
+        // Si es alumno, lo mandamos a "Mis Materias"
+        await fetchMisMaterias(user.id); 
+        setVista("misMaterias");
+      }
+
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || "Error");
+      setError(e?.response?.data?.message || e.message || "Error al inscribir");
     } finally {
       setCargando(false);
     }
   };
+  
   const editarMateria = async (id, materiaData) => {
     // 'id' es el ID de la materia
     // 'materiaData' viene de EditarMateriaForm: { Nombre: "...", CarreraId: 2 }
@@ -241,6 +279,30 @@ export default function Home() {
       await fetchMaterias(); // Recargamos la lista
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al actualizar materia");
+    } finally {
+      setCargando(false);
+    }
+  };
+  const darBajaMateria = async (id) => {
+    
+    const confirmado = window.confirm(
+      `¿Estás seguro de que deseas dar de baja la materia con ID: ${id}?`
+    );
+
+    if (!confirmado) {
+      return; 
+    }
+
+    setCargando(true);
+    setError("");
+    try {
+      await axios.delete(`/api/materias/${id}`);
+      
+      alert("Materia dada de baja exitosamente.");
+      
+    } catch (e)
+    {
+      setError(e?.response?.data?.message || e.message || "Error al dar de baja la materia");
     } finally {
       setCargando(false);
     }
@@ -334,11 +396,9 @@ export default function Home() {
               </>
             )}
             
-            {/* ... (el resto de vistas no cambia) ... */}
             {vista === "materias" && (
               <>
                 {materiaParaEditar ? (
-                  // 1. Muestra el form de EDICIÓN
                   <EditarMateriaForm
                     materia={materiaParaEditar}
                     onGuardar={editarMateria}
@@ -346,14 +406,13 @@ export default function Home() {
                     cargando={cargando}
                   />
                 ) : mostrandoFormCrearMateria ? (
-                  // 2. Muestra el form de CREACIÓN
                   <CrearMateriaForm
                     onGuardar={crearMateria}
                     onCancelar={() => setMostrandoFormCrearMateria(false)}
                     cargando={cargando}
                   />
                 ) : (
-                  // 3. Muestra la tabla (default)
+                  // Muestra la tabla (default)
                   <>
                     {user?.rol === 1 && (
                       <div style={{ marginBottom: 16 }}>
@@ -363,10 +422,11 @@ export default function Home() {
                       </div>
                     )}
                     
-                    {/* 7. Pasamos las nuevas props a TablaMaterias */}
+                    {/* --- 3. PASAMOS LA NUEVA PROP 'onDarBaja' --- */}
                     <TablaMaterias 
                       items={materias} 
                       onEditar={(materia) => setMateriaParaEditar(materia)}
+                      onDarBaja={darBajaMateria} // <-- PROP NUEVA
                       user={user}
                     />
                   </>
@@ -376,9 +436,14 @@ export default function Home() {
             {vista === "misMaterias" && <TablaMaterias items={misMaterias} titulo="Materias en las que estoy inscripto/a" />}
             {vista === "inscribirme" && (
               <InscribirView
+                // Pasamos todo lo que necesita
+                user={user}
+                alumnos={alumnos}
                 materias={materias}
                 materiaSel={materiaSel}
                 setMateriaSel={setMateriaSel}
+                alumnoSel={alumnoSel}
+                setAlumnoSel={setAlumnoSel}
                 onInscribir={inscribirme}
               />
             )}
