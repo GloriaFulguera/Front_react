@@ -16,7 +16,7 @@ import Button from "../components/Boton"; // Tu nombre de componente
 import CrearMateriaForm from "../components/CrearMateriaForm";
 import EditarMateriaForm from "../components/EditarMateriaForm";
 import TablaAlumnosInscriptos from "../components/TablaAlumnosInscriptos";
-import TablaMateriasInscriptas from "../components/TablaMateriasInscriptas";
+import Tabla from "../components/Tabla";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -337,6 +337,41 @@ export default function Home() {
       setCargando(false);
     }
   };
+
+  const darBajaInscripcion = async (idMateria) => {
+    
+    const confirmado = window.confirm(
+      `¿Estás seguro de que deseas anular tu inscripción a esta materia?`
+    );
+    if (!confirmado) return;
+
+    setCargando(true);
+    setError("");
+    try {
+      // 2. Construimos el body que pide la API
+      // (Asumo que es idéntico al de 'inscribirme')
+      const body = {
+        idAlumno: Number(user.id), // ID del alumno logueado
+        idMateria: Number(idMateria)
+      };
+
+      // 3. ¡OJO! axios.delete con body es especial
+      // Se pasa la config como segundo argumento, con la prop 'data'
+      await axios.delete(`/api/inscripciones`, { data: body });
+      
+      alert("Inscripción anulada exitosamente.");
+      
+      // 4. "UI Optimista": Filtramos la materia de la lista "Mis Materias"
+      setMisMaterias(listaAnterior => 
+        listaAnterior.filter(m => m.idMateria !== idMateria)
+      );
+      
+    } catch (e) {
+      setError(e?.response?.data?.message || e.message || "Error al anular la inscripción");
+    } finally {
+      setCargando(false);
+    }
+  };
   // ===== FIN DE LLAMADAS API =====
 
   // useEffect (sin cambios)
@@ -481,7 +516,29 @@ export default function Home() {
                 )}
               </>
             )}
-            {vista === "misMaterias" && <TablaMaterias items={misMaterias} titulo="Materias en las que estoy inscripto/a" />}
+            {vista === "misMaterias" && (
+              <div>
+                <h3 style={{ fontWeight: 600, marginBottom: 8 }}>
+                  Materias en las que estoy inscripto/a
+                </h3>
+                {/* Usamos 'Tabla' genérica en lugar de 'TablaMaterias' */}
+                <Tabla
+                  // Definimos headers sin 'Carrera'
+                  headers={["Id", "Nombre", "Acciones"]}
+                  rows={(misMaterias || []).map(m => [
+                    m.idMateria,
+                    m.materia,
+                    // Construimos el botón manualmente aquí
+                    <Button
+                      size="sm"
+                      onClick={() => darBajaInscripcion(m.idMateria)}
+                    >
+                      Anular Inscripción
+                    </Button>
+                  ])}
+                />
+              </div>
+            )}
             {vista === "inscribirme" && (
               <InscribirView
                 // Pasamos todo lo que necesita
