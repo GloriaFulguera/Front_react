@@ -1,4 +1,6 @@
-export default function InscribirView({ materias, materiaSel, setMateriaSel, onInscribir }) {
+import Button from "./Boton";
+
+export default function Inscripcion({ materias, materiaSel, setMateriaSel, onInscribir }) {
   return (
     <div style={{ maxWidth: 420 }}>
       <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Inscribirme en una materia</h3>
@@ -17,13 +19,13 @@ export default function InscribirView({ materias, materiaSel, setMateriaSel, onI
       </select>
 
       <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-        <button
-          disabled={!materiaSel}
-          className="bg-black text-white rounded px-4 py-2"
+        <Button
           onClick={onInscribir}
+          disabled={!materiaSel}
+          size="md"
         >
           Inscribirme
-        </button>
+        </Button>
       </div>
     </div>
   );

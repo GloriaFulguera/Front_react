@@ -1,6 +1,5 @@
-// src/components/Navbar.jsx
+import Button from "./Boton"; 
 
-// ===== estilos botón navbar =====
 function btn(active) {
   return `border rounded px-3 py-1 ${active ? "bg-black text-white" : ""}`;
 }
@@ -21,7 +20,10 @@ export default function Navbar({ user, vista, setVista, onLogout }) {
         <small style={{ color: "#555" }}>
           {user ? `👤 ${user.username || "user"} • id: ${user.id} • rol: ${user.rol}` : "Sesión"}
         </small>
-        <button className="bg-black text-white rounded px-3 py-1" onClick={onLogout}>Salir</button>
+        
+        <Button onClick={onLogout} size="sm">
+          Salir
+        </Button>
       </div>
     </div>
   );
