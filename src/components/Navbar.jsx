@@ -14,11 +14,13 @@ export default function Navbar({ user, vista, setVista, onLogout }) {
       {(user?.rol === 1 || user.rol===2) && (
         <button className={btn(vista === "alumnos")} onClick={() => setVista("alumnos")}>Alumnos</button>
       )}
-      {/* <button className={btn(vista === "alumnos")} onClick={() => setVista("alumnos")}>Alumnos</button> */}
+
       <button className={btn(vista === "materias")} onClick={() => setVista("materias")}>Materias</button>
+
       {user?.rol === 3 && (
         <button className={btn(vista === "misMaterias")} onClick={() => setVista("misMaterias")}>Mis materias</button>
       )}
+      
       {(user.rol === 3||user.rol===1) && (
       <button className={btn(vista === "inscribirme")} onClick={() => setVista("inscribirme")}>{user.rol === 3 ? "Inscribirme" : "Inscribir"}</button>
       )}

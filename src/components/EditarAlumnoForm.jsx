@@ -1,14 +1,10 @@
-// src/components/EditarAlumnoForm.jsx
 import { useState } from "react";
-import Button from "./Boton"; // Uso tu import de "Boton"
+import Button from "./Boton"; 
 
-// 1. Recibe el 'alumno' que vamos a editar
 export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alumno }) {
-  // 2. Pre-cargamos los useState con los datos del alumno
   const [nombre, setNombre] = useState(alumno.nombre ?? "");
   const [mail, setMail] = useState(alumno.mail ?? "");
   const [username, setUsername] = useState(alumno.username ?? "");
-  const [password, setPassword] = useState(""); // El password empieza vacío
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -17,15 +13,12 @@ export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alum
       return;
     }
 
-    // 3. Creamos el body solo con los datos
     const data = {
       Nombre: nombre,
       Mail: mail,
       Username: username,
     };
     
-    
-    // 5. Llamamos a onGuardar con el ID del alumno y los nuevos datos
     onGuardar(alumno.Id ?? alumno.id, data);
   };
 
@@ -35,7 +28,6 @@ export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alum
         Editar Alumno (ID: {alumno.Id ?? alumno.id})
       </h3>
       
-      {/* Campo Nombre */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Nombre</label>
         <input
@@ -47,7 +39,6 @@ export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alum
         />
       </div>
 
-      {/* Campo Mail */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Mail</label>
         <input
@@ -59,7 +50,6 @@ export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alum
         />
       </div>
 
-      {/* Campo Username */}
       <div style={{ marginBottom: 8 }}>
         <label className="text-sm">Username</label>
         <input
@@ -71,7 +61,6 @@ export default function EditarAlumnoForm({ onGuardar, onCancelar, cargando, alum
         />
       </div>
 
-      {/* Botones */}
       <div style={{ display: "flex", gap: 8 }}>
         <Button
           type="button"

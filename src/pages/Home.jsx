@@ -6,11 +6,11 @@ import { decodeJWT } from "../utils/auth";
 import Navbar from "../components/Navbar";
 import TablaAlumnos from "../components/TablaAlumnos";
 import TablaMaterias from "../components/TablaMaterias";
-import InscribirView from "../components/Inscripcion"; // Tu nombre de componente
+import InscribirView from "../components/Inscripcion"; 
 import DetalleAlumno from "../components/DetalleAlumno";
 import CrearAlumnoForm from "../components/CrearAlumnoForm";
 import EditarAlumnoForm from "../components/EditarAlumnoForm"; 
-import Button from "../components/Boton"; // Tu nombre de componente
+import Button from "../components/Boton"; 
 import CrearMateriaForm from "../components/CrearMateriaForm";
 import EditarMateriaForm from "../components/EditarMateriaForm";
 import TablaAlumnosInscriptos from "../components/TablaAlumnosInscriptos";

@@ -1,8 +1,6 @@
-// src/components/TablaMaterias.jsx
 import Tabla from "./Tabla";
-import Button from "./Boton"; // Necesitamos el Botón
+import Button from "./Boton"; 
 
-// 1. RECIBIMOS 'onVerAlumnos' aquí
 export default function TablaMaterias({ items, titulo = "Materias", onEditar, onDarBaja, onVerAlumnos, user }) {
   return (
     <div>
@@ -17,17 +15,15 @@ export default function TablaMaterias({ items, titulo = "Materias", onEditar, on
           m.fe_baja ? "Baja" : "Activa",
 
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-            {/* Lógica de Editar (solo admin) */}
             {user?.rol === 1 && (
               <Button
                 size="sm"
-                onClick={() => onEditar(m)} // Pasamos el objeto 'm' (materia)
+                onClick={() => onEditar(m)} 
               >
                 Editar
               </Button>
             )}
 
-            {/* Lógica de Baja (solo admin y si no está de baja) */}
             {user?.rol === 1 && !m.fe_baja && (
               <Button
                 size="sm"
@@ -37,15 +33,11 @@ export default function TablaMaterias({ items, titulo = "Materias", onEditar, on
               </Button>
             )}
 
-            {/* --- 2. ESTE ES EL BLOQUE QUE TE FALTABA --- */}
-            {/* Botón "Ver Alumnos" (Solo Admin) */}
-            {/* 'onVerAlumnos' solo existe si Home se lo pasa (no en "Mis Materias") */}
             {(user?.rol === 1||user.rol===2) && onVerAlumnos && (
               <Button size="sm" onClick={() => onVerAlumnos(m)}>
                 Ver Alumnos
               </Button>
             )}
-            {/* --- FIN DEL BLOQUE QUE FALTABA --- */}
 
           </div>
         ])}

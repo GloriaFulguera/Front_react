@@ -1,8 +1,5 @@
-// src/components/TablaAlumnosInscriptos.jsx
-import Tabla from "./Tabla"; // Reutilizamos la tabla genérica
+import Tabla from "./Tabla"; 
 
-// Este componente solo muestra los alumnos, sin acciones.
-// Asume que la API devuelve {id, nombre, mail}
 export default function TablaAlumnosInscriptos({ items }) {
       console.log(items);
     return (
