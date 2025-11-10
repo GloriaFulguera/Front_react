@@ -1,10 +1,8 @@
-// src/pages/Home.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { decodeJWT } from "../utils/auth";
 
-// IMPORTAMOS LOS COMPONENTES
 import Navbar from "../components/Navbar";
 import TablaAlumnos from "../components/TablaAlumnos";
 import TablaMaterias from "../components/TablaMaterias";
@@ -21,7 +19,6 @@ import Tabla from "../components/Tabla";
 export default function Home() {
   const navigate = useNavigate();
 
-  // Estados (sin cambios)
   const [vista, setVista] = useState(null);
   const [alumnos, setAlumnos] = useState([]);
   const [materias, setMaterias] = useState([]);
@@ -38,17 +35,13 @@ export default function Home() {
   const [materiasDelAlumno, setMateriasDelAlumno] = useState([]);
   const [materiaSeleccionada, setMateriaSeleccionada] = useState(null);
   const [alumnosDeMateria, setAlumnosDeMateria] = useState([]);
-
+  const [miPerfilData, setMiPerfilData] = useState(null);
   
-
-  // Configuración de Axios (sin cambios)
   axios.defaults.baseURL = axios.defaults.baseURL || "http://localhost:3000";
 
-  // Helpers (sin cambios)
   const token = useMemo(() => localStorage.getItem("token"), []);
   const user = useMemo(() => decodeJWT(token), [token]); 
   
-  // Efecto para la autenticación (sin cambios)
   useEffect(() => {
     if (!token) {
       navigate("/"); return;
@@ -57,10 +50,7 @@ export default function Home() {
   }, [token, navigate]);
 
 
-  // ===== LLAMADAS API (con tu estilo de función flecha) =====
-
-  // (Todas las funciones de fetch, crear y editar quedan EXACTAMENTE IGUAL)
-  const fetchAlumnos = async () => { /* ... tu código ... */ 
+  const fetchAlumnos = async () => {
     setCargando(true); setError("");
     try {
       const response = await axios.get(`/api/alumnos`);
@@ -71,7 +61,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  const fetchMaterias = async () => { /* ... tu código ... */ 
+  const fetchMaterias = async () => {
     setCargando(true); setError("");
     try {
       const response = await axios.get(`/api/materias`);
@@ -82,7 +72,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  const fetchMisMaterias = async (alumnoId) => { /* ... tu código ... */ 
+  const fetchMisMaterias = async (alumnoId) => { 
     setCargando(true); setError("");
     try {
       const { data } = await axios.get(`/api/alumnos/${alumnoId}/materias`);
@@ -101,7 +91,7 @@ export default function Home() {
     try {
       const { data } = await axios.get(`/api/materias/${materia.idMateria}/alumnos`);
       setAlumnosDeMateria(data);
-      setMateriaSeleccionada(materia); // Guardamos la materia para mostrar el título
+      setMateriaSeleccionada(materia);
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al buscar alumnos de la materia");
     } finally {
@@ -119,7 +109,6 @@ export default function Home() {
       setAlumnoSeleccionado(resAlumno.data[0]); 
 
       const resMaterias = await axios.get(`/api/alumnos/${id}/materias`);
-      // Esta API devuelve la lista de materias inscriptas (formato simple)
       setMateriasDelAlumno(resMaterias.data); 
 
     } catch (e) {
@@ -129,7 +118,7 @@ export default function Home() {
     }
   };
 
-  const crearAlumno = async (alumnoData) => { /* ... tu código ... */ 
+  const crearAlumno = async (alumnoData) => { 
     const body = {
       nombre: alumnoData.Nombre,
       mail: alumnoData.Mail,
@@ -150,7 +139,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  const editarAlumno = async (id, alumnoData) => { /* ... tu código ... */ 
+  const editarAlumno = async (id, alumnoData) => {
     setCargando(true);
     setError("");
     const bodyFinal = {
@@ -177,26 +166,20 @@ export default function Home() {
     }
   };
 
-  // --- 1. AQUÍ AGREGAMOS LA NUEVA FUNCIÓN ---
   const darBajaAlumno = async (id) => {
-    // a. Pedimos confirmación
     const confirmado = window.confirm(
       `¿Estás seguro de que deseas dar de baja al alumno con ID: ${id}?`
     );
 
     if (!confirmado) {
-      return; // Si el admin cancela, no hacemos nada
+      return;
     }
 
     setCargando(true);
     setError("");
     try {
-      // b. Llamamos al endpoint DELETE
       await axios.delete(`/api/alumnos/${id}`);
-      
       alert("Alumno dado de baja exitosamente.");
-      
-      // c. Refrescamos la lista
       await fetchAlumnos(); 
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al dar de baja al alumno");
@@ -204,8 +187,6 @@ export default function Home() {
       setCargando(false);
     }
   };
-  // --- FIN DE LA NUEVA FUNCIÓN ---
-
 
   const crearMateria = async (materiaData) => {
     const body = {
@@ -220,8 +201,8 @@ export default function Home() {
         headers: { "Content-Type": "application/json" }
       });
       alert("Materia creada exitosamente");
-      setMostrandoFormCrearMateria(false); // Ocultamos el form
-      await fetchMaterias(); // Recargamos la lista de MATERIAS
+      setMostrandoFormCrearMateria(false);
+      await fetchMaterias();
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al crear materia");
     } finally {
@@ -231,20 +212,18 @@ export default function Home() {
 
   const inscribirme = async () => { 
     
-    // a. Determinamos qué alumno inscribir
     let idAlumnoParaInscribir;
 
-    if (user?.rol === 1) { // Si es Admin
+    if (user?.rol === 1) {
       idAlumnoParaInscribir = alumnoSel;
       if (!idAlumnoParaInscribir) {
-        alert("Modo Admin: Por favor, selecciona un alumno.");
+        alert("Por favor, selecciona un alumno.");
         return;
       }
-    } else { // Si es Alumno
+    } else { 
       idAlumnoParaInscribir = user?.id;
     }
 
-    // b. Validamos la materia
     if (!materiaSel) {
       alert("Por favor, selecciona una materia.");
       return;
@@ -254,27 +233,20 @@ export default function Home() {
     setError("");
     
     try {
-      // c. Construimos el body que pide la API
       const body = {
         idAlumno: Number(idAlumnoParaInscribir),
-        idMateria: Number(materiaSel),
-        userMod: user.username, 
-        userModRol: user.rol
+        idMateria: Number(materiaSel)
       };
 
       await axios.post(`/api/inscripciones`, body, {
         headers: { "Content-Type": "application/json" }
       });
-
       alert("Inscripción realizada");
 
-      // d. Lógica de feedback (diferente por rol)
       if (user?.rol === 1) {
-        // Si es admin, limpiamos los campos y se queda en la vista
         setAlumnoSel("");
         setMateriaSel("");
       } else {
-        // Si es alumno, lo mandamos a "Mis Materias"
         await fetchMisMaterias(user.id); 
         setVista("misMaterias");
       }
@@ -287,28 +259,23 @@ export default function Home() {
   };
   
   const editarMateria = async (id, materiaData) => {
-    // 'id' es el ID de la materia
-    // 'materiaData' viene de EditarMateriaForm: { Nombre: "...", CarreraId: 2 }
-
     setCargando(true);
     setError("");
 
-    // 4. Construimos el body EXACTO que pide tu API
     const bodyFinal = {
       nombre: materiaData.Nombre,
-      carrera: materiaData.CarreraId, // ID de la carrera
-      userMod: user.username,         // Usuario de auditoría
-      userModRol: user.rol            // Rol de auditoría
+      carrera: materiaData.CarreraId,
+      userMod: user.username, 
+      userModRol: user.rol  
     };
-    console.log("MATERIA DATA")
-    console.log(materiaData)
+
     try {
       await axios.put(`/api/materias/${id}`, bodyFinal, {
         headers: { "Content-Type": "application/json" }
       });
       alert("Materia actualizada exitosamente");
-      setMateriaParaEditar(null); // Ocultamos el form
-      await fetchMaterias(); // Recargamos la lista
+      setMateriaParaEditar(null);
+      await fetchMaterias();
     } catch (e) {
       setError(e?.response?.data?.message || e.message || "Error al actualizar materia");
     } finally {
@@ -350,20 +317,13 @@ export default function Home() {
     setCargando(true);
     setError("");
     try {
-      // 2. Construimos el body que pide la API
-      // (Asumo que es idéntico al de 'inscribirme')
       const body = {
-        idAlumno: Number(user.id), // ID del alumno logueado
+        idAlumno: Number(user.id),
         idMateria: Number(idMateria)
       };
-
-      // 3. ¡OJO! axios.delete con body es especial
-      // Se pasa la config como segundo argumento, con la prop 'data'
       await axios.delete(`/api/inscripciones`, { data: body });
       
       alert("Inscripción anulada exitosamente.");
-      
-      // 4. "UI Optimista": Filtramos la materia de la lista "Mis Materias"
       setMisMaterias(listaAnterior => 
         listaAnterior.filter(m => m.idMateria !== idMateria)
       );
@@ -374,9 +334,7 @@ export default function Home() {
       setCargando(false);
     }
   };
-  // ===== FIN DE LLAMADAS API =====
 
-  // useEffect (sin cambios)
   useEffect(() => {
     setError("");
     setAlumnoSeleccionado(null);
@@ -384,14 +342,15 @@ export default function Home() {
     setAlumnoParaEditar(null); 
     setMostrandoFormCrearMateria(false);
     setMateriaParaEditar(null);
+    setMiPerfilData(null);
     
     if (vista === null) {
-      if (user?.rol === 1) { // Admin (rol 1)
-        setVista("alumnos");
-      } else { // Otro rol
+      if (user?.rol === 3) {
         setVista("materias");
+      } else { 
+        setVista("alumnos");
       }
-      return; // Salimos (el effect se volverá a ejecutar)
+      return; 
     }
 
     if (vista === "alumnos") fetchAlumnos();
@@ -400,17 +359,29 @@ export default function Home() {
     if (vista === "inscribirme") {
       if (materias.length === 0) fetchMaterias();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (vista === "miPerfil" && user?.id) {
+      const cargarMiPerfil = async () => {
+        setCargando(true);
+        setError("");
+        try {
+          const response = await axios.get(`/api/alumnos/${user.id}`);
+          setMiPerfilData(response.data[0]);
+        } catch (e) {
+          setError(e?.response?.data?.message || e.message || "Error al cargar tu perfil");
+        } finally {
+          setCargando(false);
+        }
+      };
+      cargarMiPerfil();
+    }
   }, [vista, user?.id]);
 
-  // logout (sin cambios)
   const logout = () => {
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
     navigate("/");
   };
 
-  // Renderizado del componente
   return (
     <div style={{ maxWidth: 1100, margin: "2rem auto" }}>
       <Navbar
@@ -426,10 +397,8 @@ export default function Home() {
 
         {!cargando && !error && (
           <>
-            {/* Lógica de renderizado de 'alumnos' */}
             {vista === "alumnos" && (
               <>
-                {/* ... (lógica de detalle, editar, crear no cambia) ... */}
                 {alumnoSeleccionado ? (
                   <DetalleAlumno
                     alumno={alumnoSeleccionado}
@@ -451,7 +420,6 @@ export default function Home() {
                     cargando={cargando}
                   />
                 ) : (
-                  // Muestra la tabla (default)
                   <>
                     {user?.rol === 1 && (
                       <div style={{ marginBottom: 16 }}>
@@ -461,12 +429,11 @@ export default function Home() {
                       </div>
                     )}
                     
-                    {/* --- 2. AQUÍ PASAMOS LA NUEVA PROP --- */}
                     <TablaAlumnos
                       items={alumnos}
                       onVerDetalle={fetchAlumnoById}
                       onEditar={(alumno) => setAlumnoParaEditar(alumno)} 
-                      onDarBaja={darBajaAlumno} // <-- PROP NUEVA
+                      onDarBaja={darBajaAlumno} 
                       user={user} 
                     />
                   </>
@@ -480,7 +447,6 @@ export default function Home() {
                   <div>
                     <h3>Alumnos inscriptos en: {materiaSeleccionada.nombre}</h3>
                     
-                    {/* USAMOS EL NUEVO COMPONENTE */}
                     <TablaAlumnosInscriptos
                       items={alumnosDeMateria}
                     />
@@ -505,7 +471,6 @@ export default function Home() {
                     cargando={cargando}
                   />
                 ) : (
-                  // Muestra la tabla (default)
                   <>
                     {user?.rol === 1 && (
                       <div style={{ marginBottom: 16 }}>
@@ -514,12 +479,11 @@ export default function Home() {
                         </Button>
                       </div>
                     )}
-                    
-                    {/* --- 3. PASAMOS LA NUEVA PROP 'onDarBaja' --- */}
+
                     <TablaMaterias 
                       items={materias} 
                       onEditar={(materia) => setMateriaParaEditar(materia)}
-                      onDarBaja={darBajaMateria} // <-- PROP NUEVA
+                      onDarBaja={darBajaMateria}
                       onVerAlumnos={fetchAlumnosDeMateria}
                       user={user}
                     />
@@ -532,14 +496,11 @@ export default function Home() {
                 <h3 style={{ fontWeight: 600, marginBottom: 8 }}>
                   Materias en las que estoy inscripto/a
                 </h3>
-                {/* Usamos 'Tabla' genérica en lugar de 'TablaMaterias' */}
                 <Tabla
-                  // Definimos headers sin 'Carrera'
                   headers={["Id", "Nombre", "Acciones"]}
                   rows={(misMaterias || []).map(m => [
                     m.idMateria,
                     m.materia,
-                    // Construimos el botón manualmente aquí
                     <Button
                       size="sm"
                       onClick={() => darBajaInscripcion(m.idMateria)}
@@ -552,7 +513,6 @@ export default function Home() {
             )}
             {vista === "inscribirme" && (
               <InscribirView
-                // Pasamos todo lo que necesita
                 user={user}
                 alumnos={alumnos}
                 materias={materias}
@@ -562,6 +522,20 @@ export default function Home() {
                 setAlumnoSel={setAlumnoSel}
                 onInscribir={inscribirme}
               />
+            )}
+            {vista === "miPerfil" && (
+              <>
+                {miPerfilData ? (
+                  <EditarAlumnoForm
+                    alumno={miPerfilData}
+                    onGuardar={editarAlumno} 
+                    onCancelar={() => setVista("misMaterias")} 
+                    cargando={cargando}
+                  />
+                ) : (
+                  <p>Cargando tu perfil...</p>
+                )}
+              </>
             )}
           </>
         )}

@@ -40,7 +40,7 @@ export default function TablaMaterias({ items, titulo = "Materias", onEditar, on
             {/* --- 2. ESTE ES EL BLOQUE QUE TE FALTABA --- */}
             {/* Botón "Ver Alumnos" (Solo Admin) */}
             {/* 'onVerAlumnos' solo existe si Home se lo pasa (no en "Mis Materias") */}
-            {user?.rol === 1 && onVerAlumnos && (
+            {(user?.rol === 1||user.rol===2) && onVerAlumnos && (
               <Button size="sm" onClick={() => onVerAlumnos(m)}>
                 Ver Alumnos
               </Button>

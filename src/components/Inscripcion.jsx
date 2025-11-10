@@ -17,7 +17,7 @@ export default function Inscripcion({
       
       {/* --- 2. DESPLEGABLE DE ALUMNOS (SOLO PARA ADMIN) --- */}
       {/* Si el rol es 1 (admin), muestra este bloque */}
-      {user?.rol === 1 && (
+      {(user?.rol === 1 || user.rol===2) && (
         <div style={{ marginBottom: 12 }}>
           <label className="text-sm">Alumno a inscribir</label>
           <select
